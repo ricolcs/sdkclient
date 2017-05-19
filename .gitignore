@@ -1,0 +1,9 @@
+target/
+.idea/
+*.iml
+var/
+log/
+data/
+.gradle/
+build/
+node_modules/

@@ -1,0 +1,32 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+    }
+    dependencies {
+        classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.4.3.RELEASE'
+        classpath 'com.moowork.gradle:gradle-node-plugin:0.13'
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.2.1'
+    distributionUrl = 'http://git.d.internetware.cn/yancloud-daas/yancloud-software/raw/master/software/gradle-3.2.1-all.zip'
+}
+
+
+allprojects {
+    group 'cn.internetware.support.haixinyuan'
+    version '1.0-SNAPSHOT'
+
+    apply plugin: 'java'
+    apply plugin: 'idea'
+
+    sourceCompatibility = 1.8
+
+    repositories {
+        mavenLocal()
+        maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+    }
+}
+
