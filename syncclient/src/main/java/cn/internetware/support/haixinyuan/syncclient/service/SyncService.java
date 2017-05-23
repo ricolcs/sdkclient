@@ -98,8 +98,8 @@ public class SyncService {
             LOGGER.error("Error while create data sync client: ", e);
             return;
         }
-        while (client.isOpen()) {
-            TimeUtil.sleepForTime(2000L);
+        while (client.checkConnection()) {
+            TimeUtil.sleepForTime(10000L);
         }
     }
 
@@ -157,6 +157,7 @@ public class SyncService {
     protected class DataSyncClient {
         private ObjectMapper mapper = new ObjectMapper();
         private Session session;
+        private volatile long lastSendTime;
 
         public DataSyncClient() {
             LOGGER.info("Begin to create data sync client.");
@@ -172,6 +173,7 @@ public class SyncService {
                 WebSocketContainer container = ContainerProvider.getWebSocketContainer();
                 container.setDefaultMaxTextMessageBufferSize(50 * 1024 * 1024);
                 session = container.connectToServer(this, syncUri);
+                lastSendTime = System.currentTimeMillis();
             } catch (Exception e) {
                 LOGGER.error("Create websocket link to server uri={} failed.", syncUri, e);
                 throw new RuntimeException("Create DataSyncClient failed.", e);
@@ -210,14 +212,21 @@ public class SyncService {
             LOGGER.error("Websocket client onClose called, session={}, reason={}", session, closeReason);
         }
 
-        public boolean isOpen() {
-            return session.isOpen();
+        public boolean checkConnection() {
+            if (System.currentTimeMillis() - lastSendTime < 180000) {
+                return true;
+            } else  {
+                LOGGER.warn("Server failed to response in 180 seconds, close it and make connection again.");
+                close();
+                return false;
+            }
         }
 
         protected void sendCurrentSyncRecord() {
             SyncRecord syncRecord = getCurrentSyncRecord();
             try {
                 session.getBasicRemote().sendText(mapper.writeValueAsString(syncRecord));
+                lastSendTime = System.currentTimeMillis();
                 LOGGER.info("Send sync record ok: {}", syncRecord);
             } catch (Exception e) {
                 LOGGER.error("Send sync record failed, will close connection.", e);
