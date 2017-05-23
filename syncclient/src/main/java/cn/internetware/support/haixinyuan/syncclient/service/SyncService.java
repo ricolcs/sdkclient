@@ -89,7 +89,6 @@ public class SyncService {
         LOGGER.info("Old data deleted.");
     }
 
-
     @Scheduled(fixedDelay = 10000L)
     public void runSyncByPush() {
         DataSyncClient client;
