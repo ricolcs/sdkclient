@@ -1,0 +1,30 @@
+apply plugin: 'com.moowork.node'
+
+task cnpmInstall(type: NpmTask) {
+    group = 'node'
+    args = ['install', '--registry=http://registry.cnpmjs.org']
+}
+cnpmInstall.outputs.upToDateWhen {
+    file('node_modules').exists()
+}
+
+task buildUI(type: NpmTask, dependsOn: cnpmInstall) {
+    group = 'node'
+    args = ['run', 'build']
+}
+buildUI.inputs.dir("$projectDir/src")
+buildUI.outputs.dir("$projectDir/public/build")
+jar.dependsOn buildUI
+
+task runDev(type: NpmTask, dependsOn: cnpmInstall) {
+    group = 'node'
+    args = ['run', 'dev']
+}
+
+dependencies {
+    // compile project(':server')
+}
+
+processResources {
+    from '.' include 'public/**'
+}

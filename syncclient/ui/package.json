@@ -1,0 +1,41 @@
+{
+  "name": "license-mgmt-webpages",
+  "version": "0.0.1",
+  "description": "license mgmt webpages built with Vue",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --config webpack.config.js",
+    "dev": "webpack-dev-server --content-base ./public/ --inline --config ./webpack.config.js"
+  },
+  "author": "internetware",
+  "dependencies": {
+    "axios": "^0.15.3",
+    "datatables": "^1.10.13",
+    "echarts": "^3.5.3",
+    "jquery": "^3.1.1",
+    "jquery-form": "^4.0.1",
+    "jstree": "^3.3.3",
+    "sha1": "^1.1.1",
+    "vue": "^2.1.4",
+    "vue-router": "^2.1.1",
+    "vue-tables": "^1.6.41",
+    "vue-tables-2": "^0.4.54",
+    "vuex": "^2.0.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.18.2",
+    "babel-loader": "^6.2.8",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-stage-1": "^6.16.0",
+    "css-loader": "^0.26.0",
+    "expose-loader": "^0.7.1",
+    "file-loader": "^0.9.0",
+    "html-loader": "^0.4.5",
+    "style-loader": "^0.13.1",
+    "url-loader": "^0.5.8",
+    "vue-loader": "^10.0.2",
+    "vue-template-compiler": "^2.1.4",
+    "webpack": "^1.13.3",
+    "webpack-dev-server": "^1.13.3"
+  }
+}
