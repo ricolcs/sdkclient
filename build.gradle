@@ -22,11 +22,20 @@ allprojects {
     apply plugin: 'java'
     apply plugin: 'idea'
 
-    sourceCompatibility = 1.8
+    sourceCompatibility = '1.8'
 
     repositories {
         mavenLocal()
         maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
     }
 }
+
+idea {
+    module {
+        ["log"].each {
+            excludeDirs += file("$projectDir/$it")
+        }
+    }
+}
+
 

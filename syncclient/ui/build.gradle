@@ -28,3 +28,12 @@ dependencies {
 processResources {
     from '.' include 'public/**'
 }
+
+idea {
+    module {
+        ["node_modules", "public/build"].each {
+            excludeDirs += file("$projectDir/$it")
+        }
+    }
+}
+
