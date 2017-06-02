@@ -9,7 +9,6 @@ import 'datatables'
 import 'datatables/media/css/jquery.dataTables.css'
 import './plugins/validation.js'
 
-
 Vue.config.devtools = false;
 
 appConfig.domain = location.protocol + '//' + location.host;
