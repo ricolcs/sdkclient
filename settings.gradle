@@ -1,4 +1,4 @@
 rootProject.name = 'cn.internetware.support.haixinyuan'
 include 'common'
 include 'syncclient'
-
+include 'syncclient:ui'

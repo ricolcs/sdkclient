@@ -11,7 +11,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-@EnableScheduling
+// @EnableScheduling
 @SpringBootApplication
 public class Application implements SchedulingConfigurer {
     public static void main(String[] args) {
