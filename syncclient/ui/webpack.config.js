@@ -4,13 +4,18 @@ var srcPath = path.resolve(__dirname, 'src');
 var nodeModulesPath = path.resolve(__dirname, 'node_modules');
 var buildPath = path.resolve(__dirname, 'public', 'build');
 
+var isProduction = true;
+if (process.env['NODE_ENV'] == 'dev') {
+    isProduction = false;
+}
+
 var config = {
     context: __dirname,
     devtool: 'source-map',
     entry: path.resolve(srcPath, 'main.js'),
     output: {
         path: buildPath,
-        publicPath: './build/',
+        publicPath: '/build/',
         filename: 'bundle.js'
     },
     module: {
@@ -60,8 +65,31 @@ var config = {
             $: "jquery",
             jQuery: "jquery",
             "window.jQuery": "jquery"
+        }),
+        new Webpack.DefinePlugin({
+            NODE_ENV: isProduction ? '"prod"' : '"dev"'
         })
-    ]
-}
+    ],
+
+	devServer: {
+	   contentBase: './public/',
+	   port: 18080,
+       hot: true,
+       inline: true,
+	   // Send API requests on localhost to API server get around CORS.
+	   proxy: {
+		  '/statistical': {
+			 target: {
+				host: "127.0.0.1",
+				protocol: 'http:',
+				port: 8080
+			 },
+			 pathRewrite: {
+				// '/api': ''
+			 }
+		  }
+	   }
+	}
+};
 
 module.exports = config;
