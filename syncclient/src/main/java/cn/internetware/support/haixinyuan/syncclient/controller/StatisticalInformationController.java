@@ -1,8 +1,8 @@
-package cn.internetware.support.haixinyuan.server.controller;
+package cn.internetware.support.haixinyuan.syncclient.controller;
 
 import cn.internetware.support.haixinyuan.common.model.Result;
-import cn.internetware.support.haixinyuan.server.model.StatisticalInformation;
-import cn.internetware.support.haixinyuan.server.service.StatisticalInformationService;
+import cn.internetware.support.haixinyuan.syncclient.model.StatisticalInformation;
+import cn.internetware.support.haixinyuan.syncclient.service.StatisticalInformationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

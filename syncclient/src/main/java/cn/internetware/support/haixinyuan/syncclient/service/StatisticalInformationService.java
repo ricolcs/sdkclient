@@ -1,10 +1,10 @@
-package cn.internetware.support.haixinyuan.server.service;
+package cn.internetware.support.haixinyuan.syncclient.service;
 
 import cn.internetware.support.haixinyuan.common.dao.VesselPositionCurrentDao;
 import cn.internetware.support.haixinyuan.common.dao.VesselPositionDao;
 import cn.internetware.support.haixinyuan.common.dao.VesselProfileDao;
-import cn.internetware.support.haixinyuan.server.dao.StatisticalInformationDao;
-import cn.internetware.support.haixinyuan.server.model.StatisticalInformation;
+import cn.internetware.support.haixinyuan.syncclient.dao.StatisticalInformationDao;
+import cn.internetware.support.haixinyuan.syncclient.model.StatisticalInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

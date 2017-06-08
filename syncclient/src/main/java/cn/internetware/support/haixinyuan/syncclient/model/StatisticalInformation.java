@@ -1,4 +1,4 @@
-package cn.internetware.support.haixinyuan.server.model;
+package cn.internetware.support.haixinyuan.syncclient.model;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
