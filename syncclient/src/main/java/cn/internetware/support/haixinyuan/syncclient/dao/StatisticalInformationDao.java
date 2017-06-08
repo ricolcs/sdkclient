@@ -1,6 +1,6 @@
-package cn.internetware.support.haixinyuan.server.dao;
+package cn.internetware.support.haixinyuan.syncclient.dao;
 
-import cn.internetware.support.haixinyuan.server.model.StatisticalInformation;
+import cn.internetware.support.haixinyuan.syncclient.model.StatisticalInformation;
 import org.springframework.data.repository.CrudRepository;
 
 import javax.transaction.Transactional;
