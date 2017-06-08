@@ -11,7 +11,7 @@ buildscript {
 
 task wrapper(type: Wrapper) {
     gradleVersion = '3.2.1'
-    distributionUrl = 'http://git.d.internetware.cn/yancloud-daas/yancloud-software/raw/master/software/gradle-3.2.1-all.zip'
+    distributionUrl = 'http://services.gradle.org/distributions/gradle-3.2.1-all.zip'
 }
 
 
