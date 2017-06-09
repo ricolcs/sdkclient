@@ -3,6 +3,7 @@ package cn.internetware.support.haixinyuan.syncclient.service;
 import cn.internetware.support.haixinyuan.common.dao.*;
 import cn.internetware.support.haixinyuan.common.model.*;
 import cn.internetware.support.haixinyuan.common.util.TimeUtil;
+import cn.internetware.support.haixinyuan.syncclient.common.UdpRelayClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PreDestroy;
 import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
@@ -23,6 +25,7 @@ public class SyncService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SyncService.class);
     private static long MILISECONDS_OF_7_DAYS = 7 * 24 * 3600 * 1000; // 7 days.
     private static long POSITION_RECORD_KEEP_COUNT = 10000 * 10000; // 100 millions.
+    private static long VOYAGE_RECORD_KEEP_COUNT = 1000 * 10000; // 100 millions.
 
     @Autowired
     private VesselProfileDao vesselProfileDao;
@@ -37,6 +40,9 @@ public class SyncService {
     private VesselVoyageDao vesselVoyageDao;
 
     @Autowired
+    private VesselVoyageHistoryDao vesselVoyageHistoryDao;
+
+    @Autowired
     private VesselPositionDao vesselPositionDao;
 
     @Autowired
@@ -44,7 +50,15 @@ public class SyncService {
 
     private SyncRecord current;
 
+    private final UdpRelayClient udpRelayClient;
+
     public SyncService() {
+        udpRelayClient = UdpRelayClient.createByIpAndPort(System.getProperty("haixinyuan.relay.target", "127.0.0.1:62017"));
+    }
+
+    @PreDestroy
+    public void dispose() {
+        udpRelayClient.stop();
     }
 
     protected synchronized SyncRecord getCurrentSyncRecord() {
@@ -86,6 +100,17 @@ public class SyncService {
         LOGGER.info("Delete vessel position before 100 millions ago, minEventPosition={}", minEventPosition);
         int vesselPositionDeleted = vesselPositionDao.deletePositionOlderThan(minEventPosition);
         LOGGER.info("Total {} vessel position record deleted.", vesselPositionDeleted);
+
+        Long voyageMinId = vesselVoyageHistoryDao.findMaxId();
+        if (voyageMinId != null) {
+            voyageMinId = Math.max(voyageMinId - VOYAGE_RECORD_KEEP_COUNT, 0L);
+        } else {
+            voyageMinId = 0L;
+        }
+        LOGGER.info("Delete vessel voyage position before 10 millions ago, minEventPosition={}", voyageMinId);
+        int voyageHistoryDeleted = vesselVoyageHistoryDao.deleteVoyageRecordLessThan(voyageMinId);
+        LOGGER.info("Total {} vessel voyage history record deleted.", voyageHistoryDeleted);
+
         LOGGER.info("Old data deleted.");
     }
 
@@ -117,6 +142,14 @@ public class SyncService {
         if (request.vesselVoyageList != null) {
             for (VesselVoyage voyage : request.vesselVoyageList) {
                 voyage.setSendTime(currentTime);
+                VesselVoyageHistory history = new VesselVoyageHistory();
+                BeanUtils.copyProperties(voyage, history);
+                vesselVoyageHistoryDao.save(history);
+
+                VesselProfile profile = vesselProfileDao.findOne(voyage.getShipid());
+                if (profile != null) {
+                    udpRelayClient.sendVesselStaticSafe(profile, voyage);
+                }
             }
             vesselVoyageDao.save(request.vesselVoyageList);
         }
@@ -137,6 +170,9 @@ public class SyncService {
 
                 vesselPositionDao.save(position);
                 vesselPositionCurrentDao.save(current);
+
+                // Send to client.
+                udpRelayClient.sendVesselPositionSafe(position);
             }
         }
 
