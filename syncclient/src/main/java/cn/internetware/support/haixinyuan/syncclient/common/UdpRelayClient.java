@@ -27,6 +27,10 @@ public class UdpRelayClient {
 
     UdpPacketParser parser = new UdpPacketParser();
 
+    public static UdpRelayClient createByIpAndPort(String ipAndPort) {
+        String[] ipAndPortArray = ipAndPort.split(":");
+        return new UdpRelayClient(ipAndPortArray[0], Integer.parseInt(ipAndPortArray[1]));
+    }
     public UdpRelayClient(String ip, int port) {
         this.ip = ip;
         this.port = port;
@@ -40,6 +44,7 @@ public class UdpRelayClient {
         } catch (SocketException e) {
             throw new RuntimeException("Create DatagramSocket failed.", e);
         }
+        LOGGER.info("{}: udp client created.", this);
     }
 
     @Override
@@ -47,6 +52,20 @@ public class UdpRelayClient {
         return String.format("UdpRelayClient(ip=%s, port=%s)", ip, port);
     }
 
+    public void sendVesselPositionSafe(VesselPosition position) {
+        try {
+            sendVesselPosition(position);
+        } catch (IOException e) {
+            LOGGER.error("{}: Send vessel position failed, position={}", position, e);
+        }
+    }
+    public void sendVesselStaticSafe(VesselProfile profile, VesselVoyage voyage) {
+        try {
+            sendVesselStatic(profile, voyage);
+        } catch (IOException e) {
+            LOGGER.error("{}: Send vessel static failed, profile={}, voyage={}", profile, voyage, e);
+        }
+    }
     public void sendVesselPosition(VesselPosition position) throws IOException {
         sendDataAsync(parser.packVesselPosition(position));
     }

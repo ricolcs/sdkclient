@@ -3,6 +3,7 @@ package cn.internetware.support.haixinyuan.syncclient.service;
 import cn.internetware.support.haixinyuan.common.dao.*;
 import cn.internetware.support.haixinyuan.common.model.*;
 import cn.internetware.support.haixinyuan.common.util.TimeUtil;
+import cn.internetware.support.haixinyuan.syncclient.common.UdpRelayClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PreDestroy;
 import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
@@ -48,7 +50,15 @@ public class SyncService {
 
     private SyncRecord current;
 
+    private final UdpRelayClient udpRelayClient;
+
     public SyncService() {
+        udpRelayClient = UdpRelayClient.createByIpAndPort(System.getProperty("haixinyuan.relay.target", "127.0.0.1:62017"));
+    }
+
+    @PreDestroy
+    public void dispose() {
+        udpRelayClient.stop();
     }
 
     protected synchronized SyncRecord getCurrentSyncRecord() {
@@ -135,6 +145,11 @@ public class SyncService {
                 VesselVoyageHistory history = new VesselVoyageHistory();
                 BeanUtils.copyProperties(voyage, history);
                 vesselVoyageHistoryDao.save(history);
+
+                VesselProfile profile = vesselProfileDao.findOne(voyage.getShipid());
+                if (profile != null) {
+                    udpRelayClient.sendVesselStaticSafe(profile, voyage);
+                }
             }
             vesselVoyageDao.save(request.vesselVoyageList);
         }
@@ -155,6 +170,9 @@ public class SyncService {
 
                 vesselPositionDao.save(position);
                 vesselPositionCurrentDao.save(current);
+
+                // Send to client.
+                udpRelayClient.sendVesselPositionSafe(position);
             }
         }
 
