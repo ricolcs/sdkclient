@@ -13,16 +13,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class UdpPacketParser {
     protected static final Logger LOGGER = LoggerFactory.getLogger(UdpPacketParser.class);
     protected static final int MAX_NAME_LENGTH = 60;
     protected static final Map<String, Integer> statusToCodeMap = constructStatusMap();
     protected static Map<Integer, String> codeToStatusMap = constructCodeMap(statusToCodeMap);
-
-    private ExecutorService sendDataWorker = Executors.newSingleThreadExecutor();
 
     protected static Map<String, Integer> constructStatusMap() {
         Map<String, Integer> result = new TreeMap<>();
