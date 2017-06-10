@@ -30,6 +30,11 @@ public class UdpRelayServer {
 
     UdpPacketParser parser = new UdpPacketParser();
 
+    public static UdpRelayServer createByIpAndPort(String ipAndPort) {
+        String[] ipAndPortArray = ipAndPort.split(":");
+        return new UdpRelayServer(ipAndPortArray[0], Integer.parseInt(ipAndPortArray[1]));
+    }
+
     public UdpRelayServer(String ip, int port) {
         this.ip = ip;
         this.port = port;
@@ -44,6 +49,7 @@ public class UdpRelayServer {
         } catch (SocketException e) {
             throw new RuntimeException("Create DatagramSocket failed.", e);
         }
+        LOGGER.info("{}: server created.", this);
 
         start();
     }

@@ -8,6 +8,7 @@ import cn.internetware.support.haixinyuan.syncclient.model.StatisticalInformatio
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 /**
  * Created by gongjianfei on 2017/4/19.
  */
+@Profile({"!server"})
 @Service
 public class StatisticalInformationService {
     protected static final Logger LOGGER = LoggerFactory.getLogger(StatisticalInformationService.class);
