@@ -22,24 +22,25 @@ public class UdpPacketParser {
 
     protected static Map<String, Integer> constructStatusMap() {
         Map<String, Integer> result = new TreeMap<>();
-        result.put("Aground", 0);
-        result.put("Aid To Navigation", 1);
-        result.put("At Anchor", 2);
-        result.put("Base Station", 3);
-        result.put("Class B", 4);
-        result.put("Constrained By Her Draught", 5);
-        result.put("Engaged In Fishing", 6);
-        result.put("Moored", 7);
-        result.put("Nav Aid - Sart - Mob", 8);
-        result.put("Not Under Command", 9);
-        result.put("Pushing Ahead - Towing", 10);
-        result.put("Restricted Manoeuvrability", 11);
-        result.put("SAR Aircraft", 12);
-        result.put("Stopped", 13);
-        result.put("Towing Astern", 14);
-        result.put("Underway", 15);
-        result.put("Underway By Sail", 16);
-        result.put("Underway Using Engine", 17);
+        result.put("Aground", 6);
+        result.put("At Anchor", 1);
+        result.put("Constrained By Her Draught", 4);
+        result.put("Engaged In Fishing", 7);
+        result.put("Not Under Command", 2);
+        result.put("Restricted Manoeuvrability", 3);
+
+        result.put("Aid To Navigation", 15);
+        result.put("Base Station", 16);
+        result.put("Class B", 17);
+        result.put("Moored", 18);
+        result.put("Nav Aid - Sart - Mob", 19);
+        result.put("Pushing Ahead - Towing", 20);
+        result.put("SAR Aircraft", 21);
+        result.put("Stopped", 22);
+        result.put("Towing Astern", 23);
+        result.put("Underway", 24);
+        result.put("Underway By Sail", 25);
+        result.put("Underway Using Engine", 26);
         return result;
     }
 
