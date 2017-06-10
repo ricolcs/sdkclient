@@ -55,14 +55,14 @@ public class UdpRelayClient {
     public void sendVesselPositionSafe(VesselPosition position) {
         try {
             sendVesselPosition(position);
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.error("{}: Send vessel position failed, position={}", position, e);
         }
     }
     public void sendVesselStaticSafe(VesselProfile profile, VesselVoyage voyage) {
         try {
             sendVesselStatic(profile, voyage);
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.error("{}: Send vessel static failed, profile={}, voyage={}", profile, voyage, e);
         }
     }
