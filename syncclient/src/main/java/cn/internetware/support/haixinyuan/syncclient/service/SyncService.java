@@ -53,7 +53,7 @@ public class SyncService {
     private final UdpRelayClient udpRelayClient;
 
     public SyncService() {
-        udpRelayClient = UdpRelayClient.createByIpAndPort(System.getProperty("haixinyuan.relay.target", "127.0.0.1:62017"));
+        udpRelayClient = UdpRelayClient.createByIpAndPort(System.getProperty("haixinyuan.relay.target", "192.168.10.24:8888"));
     }
 
     @PreDestroy
