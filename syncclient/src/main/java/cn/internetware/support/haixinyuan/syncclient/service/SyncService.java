@@ -19,7 +19,10 @@ import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Date;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 @Profile({"!server"})
 @Service
@@ -53,6 +56,8 @@ public class SyncService {
     private SyncRecord current;
 
     private final UdpRelayClient udpRelayClient;
+
+    private ExecutorService relayWorker = Executors.newFixedThreadPool(5);
 
     public SyncService() {
         udpRelayClient = UdpRelayClient.createByIpAndPort(System.getProperty("haixinyuan.relay.target", "192.168.10.24:8888"));
@@ -130,6 +135,49 @@ public class SyncService {
         }
     }
 
+
+    protected SyncRequest sendVesselDataViaUdp(SyncRequest request) {
+        if (request.vesselVoyageList != null) {
+            List<Long> shipidList = request.vesselVoyageList.stream().map(VesselVoyage::getShipid).collect(Collectors.toList());
+            Map<Long, VesselProfile> profileMap = new HashMap<>();
+            for (VesselProfile profile : vesselProfileDao.findAll(shipidList)) {
+                profileMap.put(profile.getShipid(), profile);
+            }
+            for (VesselVoyage voyage : request.vesselVoyageList) {
+                VesselProfile profile = profileMap.get((voyage.getShipid()));
+                if (profile != null) {
+                    udpRelayClient.sendVesselStaticAsync(profile, voyage);
+                }
+            }
+        }
+
+        if (request.vesselPositionList != null) {
+            for (VesselPosition position : request.vesselPositionList) {
+                udpRelayClient.sendVesselPositionAsync(position);
+            }
+        }
+
+        return request;
+    }
+
+    protected SyncRequest saveHistoryRecord(SyncRequest request) {
+        if (request.vesselVoyageList != null) {
+            List<VesselVoyageHistory> historyList = new ArrayList<>();
+            for (VesselVoyage voyage : request.vesselVoyageList) {
+                VesselVoyageHistory history = new VesselVoyageHistory();
+                BeanUtils.copyProperties(voyage, history);
+                historyList.add(history);
+            }
+            vesselVoyageHistoryDao.save(historyList);
+        }
+
+        if (request.vesselPositionList != null) {
+            vesselPositionDao.save(request.vesselPositionList);
+        }
+
+        return request;
+    }
+
     @Transactional
     protected SyncRequest processSyncResponse(SyncRecord currentSyncRecord, SyncRequest request) {
         LOGGER.info("Process sync response: {}", request);
@@ -144,14 +192,6 @@ public class SyncService {
         if (request.vesselVoyageList != null) {
             for (VesselVoyage voyage : request.vesselVoyageList) {
                 voyage.setSendTime(currentTime);
-                VesselVoyageHistory history = new VesselVoyageHistory();
-                BeanUtils.copyProperties(voyage, history);
-                vesselVoyageHistoryDao.save(history);
-
-                VesselProfile profile = vesselProfileDao.findOne(voyage.getShipid());
-                if (profile != null) {
-                    udpRelayClient.sendVesselStaticAsync(profile, voyage);
-                }
             }
             vesselVoyageDao.save(request.vesselVoyageList);
         }
@@ -165,18 +205,24 @@ public class SyncService {
         }
 
         if (request.vesselPositionList != null) {
+            List<VesselPositionCurrent> positionCurrentList = new ArrayList<>();
             for (VesselPosition position : request.vesselPositionList) {
                 position.setSendTime(currentTime);
                 VesselPositionCurrent current = new VesselPositionCurrent();
                 BeanUtils.copyProperties(position, current);
-
-                vesselPositionDao.save(position);
-                vesselPositionCurrentDao.save(current);
-
-                // Send to client.
-                udpRelayClient.sendVesselPositionAsync(position);
+                positionCurrentList.add(current);
             }
+            vesselPositionCurrentDao.save(positionCurrentList);
         }
+
+        relayWorker.execute(() -> {
+            try {
+                saveHistoryRecord(request);
+                sendVesselDataViaUdp(request);
+            } catch (Exception e) {
+                LOGGER.error("Process sync response: {} failed.", e);
+            }
+        });
 
         if (request.profileTimeEnd != null) {
             currentSyncRecord.profileTime = new Date(request.profileTimeEnd);

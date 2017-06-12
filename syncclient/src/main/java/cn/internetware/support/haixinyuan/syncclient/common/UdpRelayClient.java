@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 public class UdpRelayClient {
     protected static final Logger LOGGER = LoggerFactory.getLogger(UdpRelayClient.class);
 
-    private ExecutorService sendDataWorker = Executors.newSingleThreadExecutor();
+    private ExecutorService sendDataWorker = Executors.newFixedThreadPool(2);
 
     private String ip;
     private int port;
