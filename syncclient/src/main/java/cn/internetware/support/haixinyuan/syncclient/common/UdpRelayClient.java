@@ -68,7 +68,7 @@ public class UdpRelayClient {
             try {
                 sendVesselStatic(profile, voyage);
             } catch (Exception e) {
-                LOGGER.error("{}: Send vessel static failed, profile={}, voyage={}", profile, voyage, e);
+                LOGGER.error("{}: Send vessel static failed, profile={}, voyage={}", this, profile, voyage, e);
             }
         });
     }
@@ -96,7 +96,9 @@ public class UdpRelayClient {
 
     protected void sendData(ByteBuffer bb) throws IOException {
         DatagramPacket packet = new DatagramPacket(bb.array(), bb.arrayOffset(), bb.position(), address, port);
-        socket.send(packet);
+        synchronized (this) {
+            socket.send(packet);
+        }
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("{}: send data packet, length={}, data={}", this, packet.getLength(), Arrays.copyOf(packet.getData(), packet.getLength()));
         }
