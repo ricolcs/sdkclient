@@ -150,7 +150,7 @@ public class SyncService {
 
                 VesselProfile profile = vesselProfileDao.findOne(voyage.getShipid());
                 if (profile != null) {
-                    udpRelayClient.sendVesselStaticSafe(profile, voyage);
+                    udpRelayClient.sendVesselStaticAsync(profile, voyage);
                 }
             }
             vesselVoyageDao.save(request.vesselVoyageList);
@@ -174,7 +174,7 @@ public class SyncService {
                 vesselPositionCurrentDao.save(current);
 
                 // Send to client.
-                udpRelayClient.sendVesselPositionSafe(position);
+                udpRelayClient.sendVesselPositionAsync(position);
             }
         }
 
@@ -195,7 +195,7 @@ public class SyncService {
     protected class DataSyncClient {
         private ObjectMapper mapper = new ObjectMapper();
         private Session session;
-        private volatile long lastSendTime;
+        private volatile Long lastSendTime;
 
         public DataSyncClient() {
             LOGGER.info("Begin to create data sync client.");
@@ -211,7 +211,6 @@ public class SyncService {
                 WebSocketContainer container = ContainerProvider.getWebSocketContainer();
                 container.setDefaultMaxTextMessageBufferSize(50 * 1024 * 1024);
                 session = container.connectToServer(this, syncUri);
-                lastSendTime = System.currentTimeMillis();
             } catch (Exception e) {
                 LOGGER.error("Create websocket link to server uri={} failed.", syncUri, e);
                 throw new RuntimeException("Create DataSyncClient failed.", e);
@@ -231,6 +230,7 @@ public class SyncService {
             LOGGER.debug("{}: message received: {}", this, message);
             try {
                 SyncRequest request = mapper.readValue(message, SyncRequest.class);
+                lastSendTime = null;
                 processSyncResponse(getCurrentSyncRecord(), request);
                 sendCurrentSyncRecord();
             } catch (IOException e) {
@@ -251,13 +251,13 @@ public class SyncService {
         }
 
         public boolean checkConnection() {
-            if (System.currentTimeMillis() - lastSendTime < 180000) {
-                return true;
-            } else  {
+            Long lastSendTimeCopy = lastSendTime;
+            if ((lastSendTimeCopy != null) && (System.currentTimeMillis() - lastSendTimeCopy > 180000)) {
                 LOGGER.warn("Server failed to response in 180 seconds, close it and make connection again.");
                 close();
                 return false;
             }
+            return true;
         }
 
         protected void sendCurrentSyncRecord() {

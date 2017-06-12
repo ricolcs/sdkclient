@@ -31,6 +31,7 @@ public class UdpRelayClient {
         String[] ipAndPortArray = ipAndPort.split(":");
         return new UdpRelayClient(ipAndPortArray[0], Integer.parseInt(ipAndPortArray[1]));
     }
+
     public UdpRelayClient(String ip, int port) {
         this.ip = ip;
         this.port = port;
@@ -52,26 +53,32 @@ public class UdpRelayClient {
         return String.format("UdpRelayClient(ip=%s, port=%s)", ip, port);
     }
 
-    public void sendVesselPositionSafe(VesselPosition position) {
-        try {
-            sendVesselPosition(position);
-        } catch (Exception e) {
-            LOGGER.error("{}: Send vessel position failed, position={}", position, e);
-        }
+    public void sendVesselPositionAsync(VesselPosition position) {
+        sendDataWorker.execute(() -> {
+            try {
+                sendVesselPosition(position);
+            } catch (Exception e) {
+                LOGGER.error("{}: Send vessel position failed, position={}", position, e);
+            }
+        });
     }
-    public void sendVesselStaticSafe(VesselProfile profile, VesselVoyage voyage) {
-        try {
-            sendVesselStatic(profile, voyage);
-        } catch (Exception e) {
-            LOGGER.error("{}: Send vessel static failed, profile={}, voyage={}", profile, voyage, e);
-        }
+
+    public void sendVesselStaticAsync(VesselProfile profile, VesselVoyage voyage) {
+        sendDataWorker.execute(() -> {
+            try {
+                sendVesselStatic(profile, voyage);
+            } catch (Exception e) {
+                LOGGER.error("{}: Send vessel static failed, profile={}, voyage={}", profile, voyage, e);
+            }
+        });
     }
+
     public void sendVesselPosition(VesselPosition position) throws IOException {
-        sendDataAsync(parser.packVesselPosition(position));
+        sendData(parser.packVesselPosition(position));
     }
 
     public void sendVesselStatic(VesselProfile profile, VesselVoyage voyage) throws IOException {
-        sendDataAsync(parser.packVesselStatic(profile, voyage));
+        sendData(parser.packVesselStatic(profile, voyage));
     }
 
     public UdpRelayClient stop() {
@@ -87,18 +94,7 @@ public class UdpRelayClient {
         return this;
     }
 
-    protected void sendDataAsync(ByteBuffer bb) throws IOException {
-        sendDataWorker.execute(() -> sendDataSyncNoException(bb));
-    }
-
-    protected void sendDataSyncNoException(ByteBuffer bb) {
-        try {
-            sendDataSync(bb);
-        } catch (IOException e) {
-            LOGGER.error("{}: send data of of length {} failed.", this, bb.position(), e);
-        }
-    }
-    protected void sendDataSync(ByteBuffer bb) throws IOException {
+    protected void sendData(ByteBuffer bb) throws IOException {
         DatagramPacket packet = new DatagramPacket(bb.array(), bb.arrayOffset(), bb.position(), address, port);
         socket.send(packet);
         if (LOGGER.isDebugEnabled()) {
