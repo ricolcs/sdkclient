@@ -79,18 +79,16 @@ public class UdpRelayServer {
                 continue;
             }
             ByteBuffer bb = ByteBuffer.wrap(Arrays.copyOf(packet.getData(), packet.getLength()));
-            bizWorker.execute(() -> onPacketReceivedNoException(bb));
+            bizWorker.execute(() -> {
+                try {
+                    onPacketReceived(bb);
+                } catch (Exception e) {
+                    LOGGER.error("{}: processing packet(length={}) failed.", this, bb.limit(), e);
+                }
+            });
         }
 
         return this;
-    }
-
-    protected void onPacketReceivedNoException(ByteBuffer bb) {
-        try {
-            onPacketReceived(bb);
-        } catch (Exception e) {
-            LOGGER.error("{}: processing packet(length={}) failed.", this, bb.limit(), e);
-        }
     }
 
     protected void onPacketReceived(ByteBuffer bb) {
@@ -99,12 +97,10 @@ public class UdpRelayServer {
         if (bb.position() != bb.limit()) {
             throw new RuntimeException(String.format("Buffer data remaining un parsed, current consumed=%d, expected=%d", bb.position(), bb.limit()));
         }
-        if (LOGGER.isDebugEnabled()) {
-            try {
-                LOGGER.debug("{}: received data={}", this, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(status));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException("Processing udp packet failed.", e);
-            }
+        try {
+            LOGGER.info("{}: received data={}", this, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(status));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Processing udp packet failed.", e);
         }
     }
 

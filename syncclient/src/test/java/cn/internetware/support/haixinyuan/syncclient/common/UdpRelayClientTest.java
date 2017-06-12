@@ -28,7 +28,7 @@ public class UdpRelayClientTest {
         position.setSpeed(6.8f);
         position.setStatus("Stopped");
 
-        client.sendVesselPosition(position);
+        client.sendVesselPositionAsync(position);
         LOGGER.info("Send position via udp: {}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(position));
         client.stop();
     }
@@ -50,7 +50,7 @@ public class UdpRelayClientTest {
         status.voyage.setDestination("CN TJG");
         status.voyage.setEta(new Date());
 
-        client.sendVesselStatic(status.profile, status.voyage);
+        client.sendVesselStaticAsync(status.profile, status.voyage);
         LOGGER.info("Send position via udp: {}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(status));
         client.stop();
     }
