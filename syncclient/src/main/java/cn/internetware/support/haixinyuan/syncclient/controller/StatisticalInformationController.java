@@ -4,6 +4,7 @@ import cn.internetware.support.haixinyuan.common.model.Result;
 import cn.internetware.support.haixinyuan.syncclient.model.StatisticalInformation;
 import cn.internetware.support.haixinyuan.syncclient.service.StatisticalInformationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -11,9 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-/**
- * Created by gongjianfei on 2017/4/19.
- */
+@Profile("!server")
 @RestController
 @RequestMapping("statistical/information")
 public class StatisticalInformationController {
