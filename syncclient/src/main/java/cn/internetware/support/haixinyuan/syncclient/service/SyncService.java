@@ -297,6 +297,10 @@ public class SyncService {
         }
 
         public boolean checkConnection() {
+            if (!session.isOpen()) {
+                LOGGER.warn("checkConnection: session is not open.");
+                return false;
+            }
             Long lastSendTimeCopy = lastSendTime;
             if ((lastSendTimeCopy != null) && (System.currentTimeMillis() - lastSendTimeCopy > 180000)) {
                 LOGGER.warn("Server failed to response in 180 seconds, close it and make connection again.");
